@@ -6,32 +6,42 @@ The project demonstrates practical data engineering concepts including reliable 
 
 ## 1. Project Architecture
 
-```text
-NYC TLC Official Data
-        |
-        v
-Python Ingestion Pipeline
-        |
-        +--> Download Parquet and CSV files
-        +--> Validate source files
-        +--> Calculate SHA-256 checksums
-        +--> Maintain ingestion manifest
-        |
-        v
-Snowflake RAW Layer
-        |
-        v
-dbt Transformations
-        |
-        +--> Staging
-        +--> Intermediate
-        +--> Marts
-        |
-        v
-Analytics-ready Data Models
+## 1. Project Architecture
 
-Apache Airflow orchestrates:
-Python Ingestion --> dbt Build
+```mermaid
+flowchart TD
+    A["NYC TLC Data Sources"] --> B["Python Ingestion Pipeline"]
+
+    A1["Yellow Taxi Parquet"] --> A
+    A2["Taxi Zone CSV"] --> A
+
+    B --> B1["Download and Validate"]
+    B1 --> B2["SHA-256 Checksums"]
+    B2 --> B3["Manifest and Idempotency"]
+    B3 --> C["Snowflake RAW Layer"]
+
+    C --> C1["YELLOW_TRIPS"]
+    C --> C2["TAXI_ZONES"]
+
+    C1 --> D["dbt Transformations"]
+    C2 --> D
+
+    D --> E["STAGING"]
+    E --> F["INTERMEDIATE"]
+    F --> G["MARTS"]
+
+    G --> G1["FCT_TRIPS"]
+    G --> G2["DIM_DATE"]
+    G --> G3["DIM_TAXI_ZONE"]
+    G --> G4["DIM_VENDOR"]
+    G --> G5["DIM_PAYMENT_TYPE"]
+    G --> G6["MART_DAILY_BOROUGH_REVENUE"]
+
+    H["Apache Airflow"] -. "Orchestrates" .-> B
+    H -. "Runs after ingestion" .-> D
+
+    G1 --> I["Analytics and Reporting"]
+    G6 --> I
 ```
 
 ## 2. Technology Stack
