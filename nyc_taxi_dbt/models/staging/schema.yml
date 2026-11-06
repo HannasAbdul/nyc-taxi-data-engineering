@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: stg_yellow_trips
+    description: "Standardized NYC Yellow Taxi trip records."
+
+    columns:
+      - name: vendor_id
+        data_tests:
+          - not_null
+
+      - name: pickup_datetime
+        data_tests:
+          - not_null
+
+      - name: dropoff_datetime
+        data_tests:
+          - not_null
+
+      - name: pickup_location_id
+        data_tests:
+          - not_null
+
+      - name: dropoff_location_id
+        data_tests:
+          - not_null
+
+  - name: stg_taxi_zones
+    description: "Standardized NYC taxi location lookup."
+
+    columns:
+      - name: location_id
+        data_tests:
+          - not_null
+          - unique
+
+      - name: borough
+        data_tests:
+          - not_null
+
+      - name: zone_name
+        data_tests:
+          - not_null
+

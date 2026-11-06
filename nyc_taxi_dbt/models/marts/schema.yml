@@ -1,0 +1,156 @@
+version: 2
+
+models:
+  - name: fct_trips
+    description: "Trusted taxi trip fact table containing trips that pass the duration quality rule."
+
+    columns:
+      - name: pickup_datetime
+        data_tests:
+          - not_null
+
+      - name: dropoff_datetime
+        data_tests:
+          - not_null
+
+      - name: trip_duration_seconds
+        data_tests:
+          - not_null
+
+      - name: duration_quality_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['VALID']
+
+      - name: passenger_count_quality_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - VALID
+                  - MISSING_PASSENGER_COUNT
+                  - ZERO_PASSENGER_COUNT
+                  - INVALID_NEGATIVE_PASSENGER_COUNT
+      - name: pickup_date
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+
+      - name: pickup_location_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_taxi_zone')
+                field: location_id
+
+      - name: dropoff_location_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_taxi_zone')
+                field: location_id
+
+      - name: vendor_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_vendor')
+                field: vendor_id
+
+      - name: payment_type
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_payment_type')
+                field: payment_type
+
+  - name: mart_daily_borough_revenue
+    description: "Daily taxi trip and revenue metrics grouped by pickup date and pickup borough."
+
+    columns:
+      - name: pickup_date
+        data_tests:
+          - not_null
+
+      - name: pickup_borough
+        data_tests:
+          - not_null
+
+      - name: total_trips
+        data_tests:
+          - not_null
+
+  - name: dim_date
+    description: "Calendar dimension containing consecutive dates and calendar attributes."
+
+    columns:
+      - name: date_day
+        data_tests:
+          - not_null
+          - unique
+
+      - name: year
+        data_tests:
+          - not_null
+
+      - name: month
+        data_tests:
+          - not_null
+
+      - name: day_of_month
+        data_tests:
+          - not_null
+   
+  - name: dim_taxi_zone
+    description: "Taxi zone dimension containing NYC borough, zone, and service-zone information."
+
+    columns:
+      - name: location_id
+        data_tests:
+          - not_null
+          - unique
+
+      - name: borough
+        data_tests:
+          - not_null
+
+      - name: zone_name
+        data_tests:
+          - not_null 
+
+
+
+  - name: dim_vendor
+    description: "Taxi technology provider dimension."
+
+    columns:
+      - name: vendor_id
+        data_tests:
+          - not_null
+          - unique
+
+      - name: vendor_name
+        data_tests:
+          - not_null
+
+
+  - name: dim_payment_type
+    description: "Reference dimension describing NYC TLC taxi payment types."
+
+    columns:
+      - name: payment_type
+        data_tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: [0, 1, 2, 3, 4, 5, 6]
+
+      - name: payment_type_description
+        data_tests:
+          - not_null

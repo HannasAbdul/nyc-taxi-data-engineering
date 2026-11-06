@@ -24,3 +24,13 @@ data/raw/*
 data/metadata/*
 !data/raw/.gitkeep
 !data/metadata/.gitkeep
+# Local backups and generated logs
+backups/
+logs/
+*.log
+
+# Temporary files
+dbt_task
+*.disabled
+# Local Airflow configuration containing development settings
+airflow/docker-compose.yaml

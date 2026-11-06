@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow_local_password
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+    restart: unless-stopped
+
+  airflow-api-server:
+    env_file:
+      - ../.env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow_local_password@postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__API__SECRET_KEY: "local-development-secret-key-change-me"
+      PYTHONPATH: /opt/airflow/ingestion/src
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ../logs:/opt/airflow/logs
+      - ../ingestion:/opt/airflow/ingestion
+      - ../data:/opt/airflow/data
+      - ../scripts:/opt/airflow/scripts
+      - ../nyc_taxi_dbt:/opt/airflow/nyc_taxi_dbt
+      - ${HOME}/.dbt:/home/airflow/.dbt:ro
+    ports:
+      - "8080:8080"
+    command: api-server
+    restart: unless-stopped
+
+  airflow-scheduler:
+    env_file:
+      - ../.env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow_local_password@postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__API__SECRET_KEY: "local-development-secret-key-change-me"
+      PYTHONPATH: /opt/airflow/ingestion/src
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-api-server:8080/execution/"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ../logs:/opt/airflow/logs
+      - ../ingestion:/opt/airflow/ingestion
+      - ../data:/opt/airflow/data
+      - ../scripts:/opt/airflow/scripts
+      - ../nyc_taxi_dbt:/opt/airflow/nyc_taxi_dbt
+      - ${HOME}/.dbt:/home/airflow/.dbt:ro
+    command: scheduler
+    restart: unless-stopped
+
+  airflow-dag-processor:
+    env_file:
+      - ../.env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow_local_password@postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__API__SECRET_KEY: "local-development-secret-key-change-me"
+      PYTHONPATH: /opt/airflow/ingestion/src
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ../logs:/opt/airflow/logs
+      - ../ingestion:/opt/airflow/ingestion
+      - ../data:/opt/airflow/data
+      - ../scripts:/opt/airflow/scripts
+      - ../nyc_taxi_dbt:/opt/airflow/nyc_taxi_dbt
+      - ${HOME}/.dbt:/home/airflow/.dbt:ro
+    command: dag-processor
+    restart: unless-stopped
+
+volumes:
+  postgres-db-volume:

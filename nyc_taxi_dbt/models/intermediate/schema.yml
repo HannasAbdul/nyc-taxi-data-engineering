@@ -1,0 +1,53 @@
+
+version: 2
+
+models:
+  - name: int_trips_with_zones
+    description: "Taxi trips enriched with pickup and dropoff geographic information."
+
+    columns:
+      - name: pickup_location_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_taxi_zones')
+                field: location_id
+
+      - name: dropoff_location_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_taxi_zones')
+                field: location_id
+
+      - name: trip_duration_seconds
+        data_tests:
+          - not_null
+
+      - name: duration_quality_status
+        description: "Classification of trip duration data quality."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - VALID
+                  - INVALID_ZERO_DURATION
+                  - INVALID_NEGATIVE_DURATION
+                  - UNUSUALLY_LONG_DURATION
+                  - MISSING_TIMESTAMP
+
+      - name: distance_quality_status
+        description: >
+          Classification of trip distance data quality.
+          Zero and extreme distances are retained for investigation.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - VALID_RECORDED_DISTANCE
+                  - ZERO_DISTANCE
+                  - EXTREME_DISTANCE_REVIEW
+                  - MISSING_DISTANCE
+                  - INVALID_NEGATIVE_DISTANCE

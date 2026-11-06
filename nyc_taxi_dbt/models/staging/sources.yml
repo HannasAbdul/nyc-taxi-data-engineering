@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: raw
+    database: NYC_TAXI_DW
+    schema: RAW
+
+    tables:
+      - name: yellow_trips
+        description: "Raw NYC Yellow Taxi trip records."
+
+      - name: taxi_zones
+        description: "NYC taxi location lookup data."
